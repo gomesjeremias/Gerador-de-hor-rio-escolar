@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gerador Automático de Horários - Versão Melhorada</title>
+
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { margin: 0; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+    h1 { text-align: center; margin-bottom: 10px; color: #fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+    .container { max-width: 1400px; margin: 0 auto; }
+
+    .card {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      margin-bottom: 20px;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      color: #333;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 8px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      align-items: end;
+    }
+
+    label { 
+      font-size: 0.9rem; 
+      font-weight: 600; 
+      margin-bottom: 5px; 
+      display: block; 
+      color: #444;
+    }
+
+    input[type="text"], input[type="number"], select {
+      width: 100%; 
+      padding: 10px 12px;
+      border-radius: 8px; 
+      border: 2px solid #ddd;
+      font-size: 0.9rem;
+      transition: border-color 0.3s;
+    }
+
+    input[type="text"]:focus, input[type="number"]:focus, select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    button {
+      padding: 11px 16px; 
+      border-radius: 8px; 
+      border: none;
+      cursor: pointer; 
+      font-size: 0.95rem; 
+      font-weight: 600;
+      background: #667eea; 
+      color: #fff;
+      transition: all .2s; 
+      width: 100%;
+      box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
+    }
+
+    button:hover { 
+      background: #5568d3;
+      transform: translateY(-2px); 
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button.secondary { 
+      background: #6b7280; 
+      box-shadow: 0 2px 6px rgba(107, 114, 128, 0.3);
+    }
+
+    button.secondary:hover {
+      background: #4b5563;
+      box-shadow: 0 4px 12px rgba(107, 114, 128, 0.4);
+    }
+
+    button.export { 
+      background: #10b981; 
+      box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+    }
+
+    button.export:hover {
+      background: #059669;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+
+    button.danger {
+      background: #ef4444;
+      box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
+    }
+
+    button.danger:hover {
+      background: #dc2626;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    }
+
+    .turmas-box {
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 10px;
+      max-height: 180px;
+      overflow-y: auto;
+      background: #f9fafb;
+    }
+
+    .turma-item {
+      display: inline-flex;
+      align-items: center;
+      margin-right: 12px;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+      padding: 4px 8px;
+      background: #fff;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .turma-item input[type="checkbox"] {
+      margin-right: 6px;
+      cursor: pointer;
+    }
+
+    .turma-item input[type="number"] {
+      width: 60px;
+      margin-left: 8px;
+      padding: 4px 6px;
+      font-size: 0.85rem;
+    }
+
+    .day-title {
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      padding: 10px 15px; 
+      border-radius: 10px 10px 0 0;
+      font-weight: 700; 
+      text-align: center; 
+      text-transform: uppercase;
+      margin-top: 15px;
+      color: #fff;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+      font-size: 1.1rem;
+    }
+
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      background:#fff;
+      border-radius: 0 0 10px 10px; 
+      overflow:hidden; 
+      font-size:.85rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    th, td { 
+      border: 1px solid #e5e7eb; 
+      padding: 10px; 
+      text-align: center; 
+    }
+
+    th {
+      background: #f3f4f6;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .time-col { 
+      background: #f9fafb; 
+      width: 110px; 
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    .lesson-cell { 
+      min-height: 50px; 
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 0.8rem; 
+      font-weight: 600; 
+      color: #1f2937;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      line-height: 1.4;
+    }
+
+    .lesson-cell .subject {
+      font-size: 0.9rem;
+      margin-bottom: 3px;
+    }
+
+    .lesson-cell .teacher {
+      font-size: 0.75rem;
+      opacity: 0.8;
+    }
+
+    /* Cores por professor - paleta melhorada */
+    .color-0 { background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%); }
+    .color-1 { background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%); }
+    .color-2 { background: linear-gradient(135deg, #bbf7d0 0%, #86efac 100%); }
+    .color-3 { background: linear-gradient(135deg, #f9a8d4 0%, #f472b6 100%); }
+    .color-4 { background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%); }
+    .color-5 { background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%); }
+    .color-6 { background: linear-gradient(135deg, #fef08a 0%, #fde047 100%); }
+    .color-7 { background: linear-gradient(135deg, #bae6fd 0%, #7dd3fc 100%); }
+    .color-8 { background: linear-gradient(135deg, #fcd34d 0%, #fbbf24 100%); }
+    .color-9 { background: linear-gradient(135deg, #c4b5fd 0%, #a78bfa 100%); }
+
+    .stats-box {
+      background: #f0f9ff;
+      border: 2px solid #bae6fd;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 15px;
+    }
+
+    .stats-box h3 {
+      margin-top: 0;
+      color: #0369a1;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .stat-item {
+      background: #fff;
+      padding: 10px;
+      border-radius: 6px;
+      border-left: 4px solid #0ea5e9;
+      font-size: 0.85rem;
+    }
+
+    .stat-item strong {
+      display: block;
+      color: #0369a1;
+      margin-bottom: 3px;
+    }
+
+    .info-box {
+      background: #fffbeb;
+      border: 2px solid #fcd34d;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+      color: #92400e;
+    }
+
+    .info-box strong {
+      color: #78350f;
+    }
+
+    @media print {
+      .no-print { display: none !important; }
+      body { background: #ffffff; }
+      .card { box-shadow: none; }
+    }
+
+    @media (max-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+<div class="container">
+
+  <h1>📚 Gerador Automático de Horários - Versão Melhorada</h1>
+
+  <!-- PAINEL PRINCIPAL -->
+  <div class="card no-print">
+    <h2>Configuração de Distribuição</h2>
+
+    <div class="info-box">
+      <strong>💡 Como usar:</strong> Preencha os dados do professor, selecione as turmas e defina quantas aulas por semana cada turma deve ter. O sistema distribuirá automaticamente respeitando os limites e evitando conflitos.
+    </div>
+
+    <div class="form-grid">
+
+      <div>
+        <label>👨‍🏫 Professor</label>
+        <input type="text" id="autoTeacherInput" placeholder="Nome do professor">
+      </div>
+
+      <div>
+        <label>📖 Disciplina</label>
+        <input type="text" id="autoSubjectInput" placeholder="Ex.: Matemática, Português">
+      </div>
+
+      <div>
+        <label>📅 Dia de hora-atividade</label>
+        <select id="autoRestDaySelect"></select>
+      </div>
+
+      <div>
+        <label>⏱️ Aulas por dia (máximo)</label>
+        <input type="number" id="maxPerDay" value="2" min="1" max="5">
+      </div>
+
+    </div>
+
+    <div style="margin-top: 15px;">
+      <label>🎓 Turmas e Carga Horária Semanal</label>
+      <div id="turmasCheckboxContainer" class="turmas-box"></div>
+    </div>
+
+    <div class="form-grid" style="margin-top: 15px;">
+      <div>
+        <label>➕ Nova turma</label>
+        <input type="text" id="newClassInput" placeholder="Ex.: 6º ano 04">
+      </div>
+      <div style="display: flex; align-items: end;">
+        <button id="addClassButton">Adicionar turma</button>
+      </div>
+    </div>
+
+    <div class="form-grid" style="margin-top: 20px;">
+      <div>
+        <button id="autoDistributeButton">🚀 Distribuir automaticamente</button>
+      </div>
+      <div>
+        <button class="secondary" id="clearButton">🗑️ Limpar quadro</button>
+      </div>
+      <div>
+        <button class="export" id="exportPDF">📄 Exportar PDF</button>
+      </div>
+      <div>
+        <button class="export" id="exportXLS">📊 Exportar XLS</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ESTATÍSTICAS -->
+  <div class="card no-print" id="statsCard" style="display: none;">
+    <div class="stats-box">
+      <h3>📊 Estatísticas da Distribuição</h3>
+      <div id="statsContainer" class="stats-grid"></div>
+    </div>
+  </div>
+
+  <!-- QUADRO -->
+  <div class="card">
+    <h2>📅 Quadro de Horários</h2>
+    <div id="tablesContainer"></div>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  // ---------------- CONFIGURAÇÃO INICIAL ----------------
+  const days = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira"];
+
+  const timeSlots = [
+    "07:45 - 08:30",
+    "08:30 - 09:15",
+    "09:15 - 10:00",
+    "10:15 - 11:00",
+    "11:00 - 11:45"
+  ];
+
+  let classes = [
+    "6º ano 01", "6º ano 02", "6º ano 03",
+    "7º ano 01", "7º ano 02",
+    "8º ano 01", "8º ano 02",
+    "9º ano 01", "9º ano 02"
+  ];
+
+  const timetable = {};
+  const teacherColorMap = {};
+  let teacherColorCounter = 0;
+  const COLOR_CODES = [
+    "#bfdbfe", "#fed7aa", "#bbf7d0", "#f9a8d4", "#fee2e2",
+    "#e9d5ff", "#fef08a", "#bae6fd", "#fcd34d", "#c4b5fd"
+  ];
+  const teacherRestDay = {};
+
+  // ---------------- INICIALIZAÇÃO ----------------
+  function initTimetable() {
+    days.forEach(day => {
+      timetable[day] = {};
+      timeSlots.forEach(time => {
+        timetable[day][time] = {};
+        classes.forEach(cls => {
+          timetable[day][time][cls] = null;
+        });
+      });
+    });
+  }
+
+  function initDaySelect() {
+    const sel = document.getElementById("autoRestDaySelect");
+    sel.innerHTML = "";
+    const defaultOp = document.createElement("option");
+    defaultOp.value = "";
+    defaultOp.textContent = "Nenhum (trabalha todos os dias)";
+    sel.appendChild(defaultOp);
+    
+    days.forEach(d => {
+      const op = document.createElement("option");
+      op.value = d;
+      op.textContent = d;
+      sel.appendChild(op);
+    });
+  }
+
+  function renderClassCheckboxes() {
+    const cont = document.getElementById("turmasCheckboxContainer");
+    cont.innerHTML = "";
+    classes.forEach(cls => {
+      const label = document.createElement("label");
+      label.className = "turma-item";
+      
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.name = "turmaDist";
+      cb.value = cls;
+      cb.checked = true;
+      
+      const numInput = document.createElement("input");
+      numInput.type = "number";
+      numInput.name = "turmaAulas";
+      numInput.value = "4";
+      numInput.min = "1";
+      numInput.max = "25";
+      numInput.title = "Aulas por semana";
+      
+      label.appendChild(cb);
+      label.appendChild(document.createTextNode(" " + cls + " - "));
+      label.appendChild(numInput);
+      label.appendChild(document.createTextNode(" aulas/semana"));
+      
+      cont.appendChild(label);
+    });
+  }
+
+  function getColorIndex(teacherUpper) {
+    if (!teacherColorMap[teacherUpper]) {
+      teacherColorMap[teacherUpper] = teacherColorCounter % 10;
+      teacherColorCounter++;
+    }
+    return teacherColorMap[teacherUpper];
+  }
+
+  function getColorClass(teacherUpper) {
+    return "color-" + getColorIndex(teacherUpper);
+  }
+
+  // ---------------- VERIFICAÇÕES ----------------
+  function teacherBusy(teacherUpper, day, time) {
+    const slots = timetable[day][time];
+    for (const cls of Object.keys(slots)) {
+      const l = slots[cls];
+      if (l && l.teacherUpper === teacherUpper) return true;
+    }
+    return false;
+  }
+
+  function countSubjectInDay(subjectUpper, cls, day) {
+    let c = 0;
+    timeSlots.forEach(time => {
+      const l = timetable[day][time][cls];
+      if (l && l.subjectUpper === subjectUpper) c++;
+    });
+    return c;
+  }
+
+  function countSubjectInWeek(subjectUpper, cls) {
+    let c = 0;
+    days.forEach(day => {
+      timeSlots.forEach(time => {
+        const l = timetable[day][time][cls];
+        if (l && l.subjectUpper === subjectUpper) c++;
+      });
+    });
+    return c;
+  }
+
+  // ---------------- ADICIONAR TURMA ----------------
+  function addClass() {
+    const input = document.getElementById("newClassInput");
+    const name = input.value.trim();
+    if (!name) {
+      alert("Digite o nome de uma turma.");
+      return;
+    }
+    if (classes.includes(name)) {
+      alert("Essa turma já existe.");
+      return;
+    }
+    classes.push(name);
+    days.forEach(day => {
+      timeSlots.forEach(time => {
+        timetable[day][time][name] = null;
+      });
+    });
+    input.value = "";
+    renderClassCheckboxes();
+    renderTables();
+  }
+
+  // ---------------- DISTRIBUIÇÃO AUTOMÁTICA MELHORADA ----------------
+  function autoDistribute() {
+    const teacherName = document.getElementById("autoTeacherInput").value.trim();
+    const subjectName = document.getElementById("autoSubjectInput").value.trim();
+    const restDay = document.getElementById("autoRestDaySelect").value;
+    const maxPerDay = parseInt(document.getElementById("maxPerDay").value) || 2;
+
+    if (!teacherName || !subjectName) {
+      alert("Preencha o nome do Professor e da Disciplina.");
+      return;
+    }
+
+    const teacherUpper = teacherName.toUpperCase();
+    const subjectUpper = subjectName.toUpperCase();
+    teacherRestDay[teacherUpper] = restDay;
+    getColorIndex(teacherUpper); // garante cor fixa para o professor
+
+    // Coletar turmas selecionadas e suas cargas horárias
+    const checkboxes = document.querySelectorAll("input[name='turmaDist']:checked");
+    const numInputs = document.querySelectorAll("input[name='turmaAulas']");
+    
+    const classesWithLoad = [];
+    checkboxes.forEach(cb => {
+      const className = cb.value;
+      const index = Array.from(document.querySelectorAll("input[name='turmaDist']")).indexOf(cb);
+      const load = parseInt(numInputs[index].value) || 4;
+      classesWithLoad.push({ name: className, load: load, assigned: 0 });
+    });
+
+    if (classesWithLoad.length === 0) {
+      alert("Selecione pelo menos uma turma.");
+      return;
+    }
+
+    // Criar lista de slots disponíveis (dia, horário)
+    const availableSlots = [];
+    days.forEach(day => {
+      if (day === restDay) return; // pula dia de hora-atividade
+      timeSlots.forEach(time => {
+        availableSlots.push({ day, time });
+      });
+    });
+
+    // Embaralhar slots para distribuição mais uniforme
+    shuffleArray(availableSlots);
+
+    // ALGORITMO MELHORADO: Distribuir aulas até atingir a carga horária de cada turma
+    let distributed = 0;
+    let attempts = 0;
+    const maxAttempts = availableSlots.length * classesWithLoad.length * 2;
+
+    while (attempts < maxAttempts) {
+      attempts++;
+      
+      // Verificar se todas as turmas atingiram sua carga horária
+      const allComplete = classesWithLoad.every(c => c.assigned >= c.load);
+      if (allComplete) break;
+
+      // Encontrar turma que ainda precisa de aulas (priorizar as que têm menos aulas)
+      const needingClasses = classesWithLoad
+        .filter(c => c.assigned < c.load)
+        .sort((a, b) => a.assigned - b.assigned);
+      
+      if (needingClasses.length === 0) break;
+
+      const targetClass = needingClasses[0];
+
+      // Tentar encontrar um slot disponível para essa turma
+      let slotFound = false;
+      for (const slot of availableSlots) {
+        const { day, time } = slot;
+
+        // Verificar se professor está ocupado nesse horário
+        if (teacherBusy(teacherUpper, day, time)) continue;
+
+        // Verificar se a turma já tem aula nesse horário
+        if (timetable[day][time][targetClass.name] !== null) continue;
+
+        // Verificar limite de aulas por dia
+        if (countSubjectInDay(subjectUpper, targetClass.name, day) >= maxPerDay) continue;
+
+        // Agendar a aula
+        timetable[day][time][targetClass.name] = {
+          teacherName,
+          teacherUpper,
+          subjectName,
+          subjectUpper
+        };
+
+        targetClass.assigned++;
+        distributed++;
+        slotFound = true;
+        break;
+      }
+
+      // Se não encontrou slot para essa turma, tentar a próxima
+      if (!slotFound) {
+        // Marcar como completa mesmo sem atingir a carga (não há mais slots)
+        targetClass.assigned = targetClass.load;
+      }
+    }
+
+    renderTables();
+    showStats(classesWithLoad, teacherName, subjectName);
+    
+    const totalRequested = classesWithLoad.reduce((sum, c) => sum + c.load, 0);
+    alert(`Distribuição concluída!\n\n${distributed} de ${totalRequested} aulas foram distribuídas.`);
+  }
+
+  // Função auxiliar para embaralhar array
+  function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
+
+  // ---------------- ESTATÍSTICAS ----------------
+  function showStats(classesWithLoad, teacherName, subjectName) {
+    const statsCard = document.getElementById("statsCard");
+    const statsContainer = document.getElementById("statsContainer");
+    
+    statsContainer.innerHTML = "";
+    
+    classesWithLoad.forEach(cls => {
+      const actual = countSubjectInWeek(subjectName.toUpperCase(), cls.name);
+      const div = document.createElement("div");
+      div.className = "stat-item";
+      div.innerHTML = `<strong>${cls.name}</strong>${actual} / ${cls.load} aulas`;
+      statsContainer.appendChild(div);
+    });
+
+    statsCard.style.display = "block";
+  }
+
+  // ---------------- LIMPAR QUADRO ----------------
+  function clearAll() {
+    if (!confirm("Deseja limpar todo o quadro de horários?")) return;
+    initTimetable();
+    for (const k in teacherRestDay) delete teacherRestDay[k];
+    for (const k in teacherColorMap) delete teacherColorMap[k];
+    teacherColorCounter = 0;
+    document.getElementById("autoTeacherInput").value = "";
+    document.getElementById("autoSubjectInput").value = "";
+    document.getElementById("statsCard").style.display = "none";
+    renderTables();
+  }
+
+  // ---------------- EXPORTAR PDF ----------------
+  function exportPDF() {
+    window.print();
+  }
+
+  // ---------------- EXPORTAR XLS ----------------
+  function exportXLS() {
+    let html = `
+    <html><head><meta charset="UTF-8">
+    <style>
+      table { border-collapse: collapse; margin-bottom: 20px; }
+      th, td { border: 1px solid #000; padding: 6px; text-align: center; font-size: 11px; }
+      th { background: #f0f0f0; font-weight: bold; }
+      h3 { font-family: Arial; color: #333; }
+    </style>
+    </head><body>`;
+
+    days.forEach(day => {
+      html += `<h3>${day}</h3><table><thead><tr><th>Horário</th>`;
+      classes.forEach(cls => html += `<th>${cls}</th>`);
+      html += "</tr></thead><tbody>";
+
+      timeSlots.forEach(time => {
+        html += `<tr><td><strong>${time}</strong></td>`;
+        classes.forEach(cls => {
+          const l = timetable[day][time][cls];
+          if (!l) {
+            html += "<td></td>";
+          } else {
+            const idx = getColorIndex(l.teacherUpper);
+            const bg = COLOR_CODES[idx];
+            html += `<td style="background:${bg};font-weight:bold">${l.subjectName}<br>${l.teacherName}</td>`;
+          }
+        });
+        html += "</tr>";
+      });
+
+      html += "</tbody></table>";
+    });
+
+    html += "</body></html>";
+
+    const blob = new Blob([html], { type: "application/vnd.ms-excel" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "horario_escolar.xls";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // ---------------- RENDER TABELAS ----------------
+  function renderTables() {
+    const cont = document.getElementById("tablesContainer");
+    cont.innerHTML = "";
+
+    days.forEach(day => {
+      const title = document.createElement("div");
+      title.className = "day-title";
+      title.textContent = day;
+      cont.appendChild(title);
+
+      const table = document.createElement("table");
+      const thead = document.createElement("thead");
+      const headRow = document.createElement("tr");
+
+      const thTime = document.createElement("th");
+      thTime.className = "time-col";
+      thTime.textContent = "Horário";
+      headRow.appendChild(thTime);
+
+      classes.forEach(cls => {
+        const th = document.createElement("th");
+        th.textContent = cls;
+        headRow.appendChild(th);
+      });
+
+      thead.appendChild(headRow);
+      table.appendChild(thead);
+
+      const tbody = document.createElement("tbody");
+
+      timeSlots.forEach(time => {
+        const tr = document.createElement("tr");
+        const tdTime = document.createElement("td");
+        tdTime.className = "time-col";
+        tdTime.textContent = time;
+        tr.appendChild(tdTime);
+
+        classes.forEach(cls => {
+          const td = document.createElement("td");
+          const l = timetable[day][time][cls];
+          if (l) {
+            const div = document.createElement("div");
+            div.className = "lesson-cell " + getColorClass(l.teacherUpper);
+            div.innerHTML = `<div class="subject">${l.subjectName}</div><div class="teacher">${l.teacherName}</div>`;
+            td.appendChild(div);
+          }
+          tr.appendChild(td);
+        });
+
+        tbody.appendChild(tr);
+      });
+
+      table.appendChild(tbody);
+      cont.appendChild(table);
+    });
+  }
+
+  // ---------------- INICIAR ----------------
+  initTimetable();
+  initDaySelect();
+  renderClassCheckboxes();
+  renderTables();
+
+  document.getElementById("autoDistributeButton").onclick = autoDistribute;
+  document.getElementById("clearButton").onclick = clearAll;
+  document.getElementById("exportPDF").onclick = exportPDF;
+  document.getElementById("exportXLS").onclick = exportXLS;
+  document.getElementById("addClassButton").onclick = addClass;
+})();
+</script>
+
+</body>
+</html>
