@@ -526,7 +526,7 @@
     const teacherName = document.getElementById("autoTeacherInput").value.trim();
     const subjectName = document.getElementById("autoSubjectInput").value.trim();
     const restDay = document.getElementById("autoRestDaySelect").value;
-    const maxPerDay = parseInt(document.getElementById("maxPerDay").value) || 3;
+    const maxPerDay = parseInt(document.getElementById("maxPerDay").value) || 2;
 
     if (!teacherName || !subjectName) {
       alert("Preencha o nome do Professor e da Disciplina.");
@@ -616,10 +616,12 @@
         break;
       }
 
-      // Se não encontrou slot para essa turma, tentar a próxima
+      // Se não encontrou slot para essa turma, não faz nada e tenta a próxima no próximo loop.
+      // A condição de parada é que todas as turmas tenham assigned >= load.
+      // Se não houver mais slots, o loop continuará até maxAttempts e a estatística mostrará o real.
       if (!slotFound) {
-        // Marcar como completa mesmo sem atingir a carga (não há mais slots)
-        targetClass.assigned = targetClass.load;
+        // Não marca como completa. O loop continuará até que todos os slots sejam tentados
+        // ou que o maxAttempts seja atingido. A estatística final mostrará o real.
       }
     }
 
