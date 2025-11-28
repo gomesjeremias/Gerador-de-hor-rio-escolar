@@ -234,7 +234,16 @@
       color: #0369a1;
     }
 
-    .stats-grid {
+    .note {
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+    color: #856404;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    font-size: 0.9em;
+  }
+  .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       gap: 10px;
@@ -362,6 +371,9 @@
 
   <!-- QUADRO -->
   <div class="card">
+    <p class="note">
+      <strong>⚠️ Nota sobre a Alocação Exata:</strong> O gerador tentará alocar o número exato de aulas semanais (padrão: 4) para cada turma. Se a distribuição for incompleta, é devido a restrições como o limite de "Aulas por dia (máximo)" ou o "Dia de hora-atividade" selecionado.
+    </p>
     <h2>📅 Quadro de Horários</h2>
     <div id="tablesContainer"></div>
   </div>
