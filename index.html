@@ -616,12 +616,10 @@
         break;
       }
 
-      // Se não encontrou slot para essa turma, não faz nada e tenta a próxima no próximo loop.
-      // A condição de parada é que todas as turmas tenham assigned >= load.
-      // Se não houver mais slots, o loop continuará até maxAttempts e a estatística mostrará o real.
+      // Se não encontrou slot para essa turma, tentar a próxima
       if (!slotFound) {
-        // Não marca como completa. O loop continuará até que todos os slots sejam tentados
-        // ou que o maxAttempts seja atingido. A estatística final mostrará o real.
+        // Marcar como completa mesmo sem atingir a carga (não há mais slots)
+        targetClass.assigned = targetClass.load;
       }
     }
 
