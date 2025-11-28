@@ -616,10 +616,17 @@
         break;
       }
 
-      // Se não encontrou slot para essa turma, tentar a próxima
+      // Se não encontrou slot para essa turma, não faz nada e tenta a próxima no próximo loop.
+      // Para garantir a alocação exata, se o número de slots restantes for menor que o número de aulas restantes,
+      // o algoritmo deve parar de tentar alocar para essa turma, pois não há mais espaço.
+      // No entanto, o algoritmo já prioriza a turma com menos aulas, o que é a melhor estratégia.
+      // A única forma de garantir "exatamente" é se o número de slots disponíveis for igual ou maior que o total de aulas.
+      // Se o loop terminar e a carga horária não for atingida, significa que não há mais slots disponíveis.
+      // A condição de parada é que todas as turmas tenham assigned >= load.
+      // Se não houver mais slots, o loop continuará até maxAttempts e a estatística mostrará o real.
       if (!slotFound) {
-        // Marcar como completa mesmo sem atingir a carga (não há mais slots)
-        targetClass.assigned = targetClass.load;
+        // Não marca como completa. O loop continuará até que todos os slots sejam tentados
+        // ou que o maxAttempts seja atingido. A estatística final mostrará o real.
       }
     }
 
@@ -627,7 +634,21 @@
     showStats(classesWithLoad, teacherName, subjectName);
     
     const totalRequested = classesWithLoad.reduce((sum, c) => sum + c.load, 0);
-    alert(`Distribuição concluída!\n\n${distributed} de ${totalRequested} aulas foram distribuídas.`);
+    
+    let alertMessage = `Distribuição concluída!\n\n${distributed} de ${totalRequested} aulas foram distribuídas.`;
+    
+    if (distributed < totalRequested) {
+      const missingClasses = classesWithLoad.filter(c => c.assigned < c.load);
+      const missingCount = totalRequested - distributed;
+      
+      alertMessage += `\n\n⚠️ ATENÇÃO: Não foi possível alocar ${missingCount} aula(s) para as seguintes turmas:`;
+      missingClasses.forEach(c => {
+        alertMessage += `\n- ${c.name}: ${c.assigned} de ${c.load} aulas alocadas.`;
+      });
+      alertMessage += `\n\nIsso pode ocorrer devido a conflitos de horário (professor ocupado, limite de aulas por dia) ou falta de slots disponíveis no quadro.`;
+    }
+    
+    alert(alertMessage);
   }
 
   // Função auxiliar para embaralhar array
